@@ -20,49 +20,49 @@
     <UserControl.DataContext>
         <vm:GameServerVM />
     </UserControl.DataContext>
-    <UserControl.Resources>
-        <Style x:Key="alternatingStyle" TargetType="{x:Type ListViewItem}">
-            <Style.Triggers>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                    <Setter Property="Background" Value="LightSkyBlue" />
-                </Trigger>
-                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                    <Setter Property="Background" Value="LightGray" />
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Orange" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <TextBlock
             Margin="10"
             Text="There was an error connecting to the server"
             Visibility="{Binding ConnectError, Converter={StaticResource BoolToVis}}" />
-        <StackPanel
-            Margin="10"
-            Orientation="Vertical"
-            Visibility="{Binding ConnectError, Converter={StaticResource BoolToVisInverse}}">
-            <Expander HorizontalAlignment="Stretch" IsExpanded="True">
+        <Grid Visibility="{Binding ConnectError, Converter={StaticResource BoolToVisInverse}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Expander
+                HorizontalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                IsExpanded="{Binding HasPlayers, Mode=OneWay}">
                 <Expander.Header>
-                    <TextBlock Margin="-20,0,0,0">
-                        <Run Text="Online Players (" /><Run Text="{Binding PlayerCount, Mode=OneWay}" /><Run Text="/" /><Run Text="{Binding MaxPlayerCount, Mode=OneWay}" /><Run Text=")" />
-                    </TextBlock>
+                    <TextBlock Margin="-20,0,0,0" Text="{Binding ServerHeading}" />
                 </Expander.Header>
-                <ListView
-                    AlternationCount="2"
-                    ItemContainerStyle="{StaticResource alternatingStyle}"
-                    ItemsSource="{Binding OnlinePlayers}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock>
-                                <Run Text="{Binding Name, Mode=OneWay}" />
-                            </TextBlock>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <DataGrid
+                    Height="{Binding RelativeSource={RelativeSource AncestorType=Expander}, Path=ActualHeight}"
+                    VerticalAlignment="Top"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding OnlinePlayers}"
+                    ScrollViewer.CanContentScroll="True"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    Style="{StaticResource MaterialDesignDataGrid}"
+                    VerticalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Name}"
+                            Header="Name" />
+                        <DataGridTextColumn Binding="{Binding Score}" Header="Score" />
+                        <DataGridTextColumn Header="Time">
+                            <DataGridTextColumn.Binding>
+                                <Binding Path="Time" StringFormat="hh\:mm\:ss" />
+                            </DataGridTextColumn.Binding>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Expander>
-        </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

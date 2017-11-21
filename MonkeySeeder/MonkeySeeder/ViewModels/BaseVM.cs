@@ -13,6 +13,12 @@ namespace MonkeySeeder.ViewModels
     {
         private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
+        public bool IsBusy
+        {
+            get { return GetValue(() => IsBusy); }
+            set { SetValue(() => IsBusy, value); }
+        }
+
         /// <summary>
         /// Sets the value of a property.
         /// </summary>

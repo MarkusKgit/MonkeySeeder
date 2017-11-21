@@ -8,10 +8,12 @@ namespace MonkeySeeder.ViewModels
 {
     public class MainWindowVM : BaseVM
     {
-        public bool IsBusy
+        public bool ShowProgressBar
         {
-            get { return GetValue(() => IsBusy); }
-            set { SetValue(() => IsBusy, value); }
+            get
+            {
+                return (IsBusy || GameServerVM.IsBusy);
+            }
         }
 
         public bool ShutDownPC
@@ -44,7 +46,13 @@ namespace MonkeySeeder.ViewModels
         {
             RefreshApplicationsCommand = new RelayCommand(RefreshApplications);
             GameServerVM = new GameServerVM();
+            GameServerVM.PropertyChanged += GameServerVM_PropertyChanged;
             GetData();
+        }
+
+        private void GameServerVM_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged("");
         }
 
         private void RefreshApplications()

@@ -25,13 +25,28 @@ namespace MonkeySeeder.ViewModels
         public int PlayerCount
         {
             get { return GetValue(() => PlayerCount); }
-            private set { SetValue(() => PlayerCount, value); }
+            private set
+            {
+                if (SetValue(() => PlayerCount, value))
+                    NotifyPropertyChanged(() => HasPlayers);
+            }
         }
 
         public int MaxPlayerCount
         {
             get { return GetValue(() => MaxPlayerCount); }
             private set { SetValue(() => MaxPlayerCount, value); }
+        }
+
+        public string ServerHeading
+        {
+            get { return GetValue(() => ServerHeading); }
+            private set { SetValue(() => ServerHeading, value); }
+        }
+
+        public bool HasPlayers
+        {
+            get { return PlayerCount > 0; }
         }
 
         public ObservableCollection<PlayerInfo> OnlinePlayers
@@ -55,29 +70,38 @@ namespace MonkeySeeder.ViewModels
 
         private async void ConnectGameServer()
         {
-            Parsers.TryParseIPEndpoint(ServerAdress, out var endPoint);
-            var server = new SteamGameServer(endPoint);
-            SteamServerInfo serverInfo = null;
-            IReadOnlyCollection<PlayerInfo> playerInfo = null;
+            IsBusy = true;
             try
             {
-                serverInfo = await server.GetServerInfoAsync();
-                playerInfo = await server.GetPlayersAsync();
-            }
-            catch (Exception)
-            {
-                ConnectError = true;
-                return;
-            }
-            ConnectError = false;
+                Parsers.TryParseIPEndpoint(ServerAdress, out var endPoint);
+                var server = new SteamGameServer(endPoint);
+                SteamServerInfo serverInfo = null;
+                List<PlayerInfo> playerInfo = null;
+                try
+                {
+                    serverInfo = await server.GetServerInfoAsync();
+                    playerInfo = (await server.GetPlayersAsync())?.Where(x => !string.IsNullOrEmpty(x.Name)).OrderBy(x => x.Name).ToList();
+                }
+                catch (Exception)
+                {
+                    ConnectError = true;
+                    return;
+                }
+                ConnectError = false;
 
-            PlayerCount = serverInfo.Players;
-            if (playerInfo != null)
-            {
-                OnlinePlayers = new ObservableCollection<PlayerInfo>(playerInfo.Where(x => !string.IsNullOrEmpty(x.Name)));
-                PlayerCount = OnlinePlayers.Count();
+                PlayerCount = serverInfo.Players;
+                if (playerInfo != null)
+                {
+                    OnlinePlayers = new ObservableCollection<PlayerInfo>(playerInfo);
+                    PlayerCount = OnlinePlayers.Count();
+                }
+                MaxPlayerCount = serverInfo.MaxPlayers;
+                ServerHeading = $"{serverInfo.Name} ({PlayerCount}/{MaxPlayerCount})";
             }
-            MaxPlayerCount = serverInfo.MaxPlayers;
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         protected override void GetDesignTimeData()
