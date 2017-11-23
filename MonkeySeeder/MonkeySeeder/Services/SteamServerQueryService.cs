@@ -1,4 +1,5 @@
 ﻿using MonkeySeeder.Helpers;
+using MonkeySeeder.Services.SteamServerQuery;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,14 +9,14 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MonkeySeeder.Services.SteamServerQuery
+namespace MonkeySeeder.Services
 {
-    public class SteamGameServer
+    public class SteamServerQueryService
     {
         public IPEndPoint EndPoint
         {
             get;
-            private set;
+            set;
         }
 
         private byte[] PlayerChallengeId = null;
@@ -24,7 +25,11 @@ namespace MonkeySeeder.Services.SteamServerQuery
 
         private UdpClient client = new UdpClient(new IPEndPoint(IPAddress.Any, 0));
 
-        public SteamGameServer(IPEndPoint endPoint)
+        public SteamServerQueryService()
+        {
+        }
+
+        public SteamServerQueryService(IPEndPoint endPoint)
         {
             EndPoint = endPoint;
         }

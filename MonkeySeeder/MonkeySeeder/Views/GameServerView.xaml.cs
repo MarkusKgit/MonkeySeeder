@@ -11,5 +11,14 @@ namespace MonkeySeeder.Views
         {
             InitializeComponent();
         }
+
+        private void expand_SizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
+        {
+            var header = expand.Template.FindName("HeaderSite", expand) as Control;
+            var height = e.NewSize.Height;
+            if (header != null)
+                height = height - header.ActualHeight;
+            gridColorzone.Height = height;
+        }
     }
 }

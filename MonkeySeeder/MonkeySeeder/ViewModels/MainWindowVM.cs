@@ -22,16 +22,22 @@ namespace MonkeySeeder.ViewModels
             set { SetValue(() => ShutDownPC, value); }
         }
 
-        public ObservableCollection<Process> RunningApplications
+        public ObservableRangeCollection<Process> RunningApplications
         {
             get { return GetValue(() => RunningApplications); }
             set { SetValue(() => RunningApplications, value); }
         }
 
-        public string SelectedProcess
+        public Process SelectedProcess
         {
             get { return GetValue(() => SelectedProcess); }
             set { SetValue(() => SelectedProcess, value); }
+        }
+
+        public string SelectedProcessName
+        {
+            get { return GetValue(() => SelectedProcessName); }
+            set { SetValue(() => SelectedProcessName, value); }
         }
 
         public RelayCommand RefreshApplicationsCommand { get; private set; }
@@ -57,17 +63,29 @@ namespace MonkeySeeder.ViewModels
 
         private void RefreshApplications()
         {
-            RunningApplications = new ObservableCollection<Process>(Process.GetProcesses().Where(x => x.MainWindowHandle != IntPtr.Zero).OrderBy(x => x.ProcessName));
+            var processes = Process.GetProcesses().Where(x => x.MainWindowHandle != IntPtr.Zero).OrderBy(x => x.ProcessName);
+            if (RunningApplications == null)
+                RunningApplications = new ObservableRangeCollection<Process>(processes);
+            else
+                RunningApplications.ReplaceRange(processes);
+            if (!string.IsNullOrEmpty(SelectedProcessName))
+            {
+                var process = processes.Where(x => x.ProcessName == SelectedProcessName);
+                if (process != null && process.Count() == 1)
+                    SelectedProcess = process.First();
+            }
         }
 
         protected override void GetDesignTimeData()
         {
             IsBusy = true;
             ShutDownPC = true;
-            RunningApplications = new ObservableCollection<Process>
+            RunningApplications = new ObservableRangeCollection<Process>
             {
-                new Process() { }
+                Process.GetCurrentProcess()
             };
+            SelectedProcess = RunningApplications.FirstOrDefault();
+            SelectedProcessName = SelectedProcess.ProcessName;
         }
 
         protected override void GetRealData()

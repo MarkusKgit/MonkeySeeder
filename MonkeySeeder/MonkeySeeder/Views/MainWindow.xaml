@@ -92,6 +92,7 @@
                     DisplayMemberPath="ProcessName"
                     IsEditable="True"
                     ItemsSource="{Binding RunningApplications}"
+                    SelectedItem="{Binding SelectedProcess}"
                     Style="{StaticResource MaterialDesignComboBox}">
                     <materialDesign:HintAssist.Hint>
                         <StackPanel Orientation="Horizontal">
@@ -100,9 +101,9 @@
                         </StackPanel>
                     </materialDesign:HintAssist.Hint>
                     <ComboBox.Text>
-                        <Binding Path="SelectedProcess" UpdateSourceTrigger="PropertyChanged">
+                        <Binding Path="SelectedProcessName" UpdateSourceTrigger="PropertyChanged">
                             <Binding.ValidationRules>
-                                <helpers:NotEmptyValidationRule ValidatesOnTargetUpdated="True" />
+                                <helpers:NotEmptyValidationRule ValidatesOnTargetUpdated="True" ValidationStep="UpdatedValue" />
                             </Binding.ValidationRules>
                         </Binding>
                     </ComboBox.Text>

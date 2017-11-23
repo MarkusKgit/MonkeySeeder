@@ -99,13 +99,15 @@
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Helpers\IPAdressValidationRule.cs" />
+    <Compile Include="Helpers\MockProcess.cs" />
     <Compile Include="Helpers\NotEmptyValidationRule.cs" />
+    <Compile Include="Helpers\ObservablerangeCollection.cs" />
     <Compile Include="Helpers\Parsers.cs" />
     <Compile Include="Services\SteamServerQuery\Parser.cs" />
     <Compile Include="Services\SteamServerQuery\PlayerInfo.cs" />
     <Compile Include="Services\SteamServerQuery\QueryMsg.cs" />
     <Compile Include="Services\SteamServerQuery\ResponseMsgHeader.cs" />
-    <Compile Include="Services\SteamServerQuery\SteamGameServer.cs" />
+    <Compile Include="Services\SteamServerQueryService.cs" />
     <Compile Include="Services\SteamServerQuery\SteamServerInfo.cs" />
     <Compile Include="ViewModels\BaseVM.cs" />
     <Compile Include="ViewModels\GameServerVM.cs" />
