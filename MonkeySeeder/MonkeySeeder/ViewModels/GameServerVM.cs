@@ -1,4 +1,5 @@
-﻿using GalaSoft.MvvmLight.CommandWpf;
+﻿using FluentScheduler;
+using GalaSoft.MvvmLight.CommandWpf;
 using MonkeySeeder.Helpers;
 using MonkeySeeder.Services;
 using MonkeySeeder.Services.SteamServerQuery;
@@ -6,16 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MonkeySeeder.ViewModels
 {
     public class GameServerVM : BaseVM
     {
         private SteamServerQueryService steamServerQueryService;
-
-        private CancellationTokenSource autoUpdateCanceller;
 
         public string ServerAdress
         {
@@ -100,6 +99,7 @@ namespace MonkeySeeder.ViewModels
         {
             ConnectCommand = new RelayCommand(UpdateGameServer, CanConnectGameServer);
             GetData();
+            JobManager.Initialize(new Registry());
         }
 
         private bool CanConnectGameServer()
@@ -109,11 +109,14 @@ namespace MonkeySeeder.ViewModels
 
         private async void UpdateGameServer()
         {
+            Connected = false;
             await UpdateGameServerAsync();
         }
 
         private async Task UpdateGameServerAsync()
         {
+            if (steamServerQueryService == null)
+                return;
             IsBusy = true;
             try
             {
@@ -123,29 +126,32 @@ namespace MonkeySeeder.ViewModels
                 List<PlayerInfo> playerInfo = null;
                 try
                 {
-                    serverInfo = await steamServerQueryService?.GetServerInfoAsync();
-                    playerInfo = (await steamServerQueryService?.GetPlayersAsync())?.Where(x => !string.IsNullOrEmpty(x.Name)).OrderBy(x => x.Name).ToList();
+                    serverInfo = await steamServerQueryService.GetServerInfoAsync().ConfigureAwait(false);
+                    playerInfo = (await steamServerQueryService.GetPlayersAsync().ConfigureAwait(false))?.Where(x => !string.IsNullOrEmpty(x.Name)).OrderBy(x => x.Name).ToList();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     ConnectError = true;
-                    Connected = false;
+                    //Connected = false;
                     return;
                 }
-                ConnectError = false;
-                Connected = true;
-
-                PlayerCount = serverInfo.Players;
-                if (playerInfo != null)
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    if (OnlinePlayers == null)
-                        OnlinePlayers = new ObservableRangeCollection<PlayerInfo>(playerInfo);
-                    else
-                        OnlinePlayers.ReplaceRange(playerInfo);
-                    PlayerCount = OnlinePlayers.Count();
-                }
-                MaxPlayerCount = serverInfo.MaxPlayers;
-                ServerHeading = $"{serverInfo.Name} ({PlayerCount}/{MaxPlayerCount})";
+                    ConnectError = false;
+                    Connected = true;
+
+                    PlayerCount = serverInfo.Players;
+                    if (playerInfo != null)
+                    {
+                        if (OnlinePlayers == null)
+                            OnlinePlayers = new ObservableRangeCollection<PlayerInfo>(playerInfo);
+                        else
+                            OnlinePlayers.ReplaceRange(playerInfo);
+                        PlayerCount = OnlinePlayers.Count();
+                    }
+                    MaxPlayerCount = serverInfo.MaxPlayers;
+                    ServerHeading = $"{serverInfo.Name} ({PlayerCount}/{MaxPlayerCount})";
+                }));
             }
             finally
             {
@@ -156,24 +162,9 @@ namespace MonkeySeeder.ViewModels
         private void ToggleAutoUpdate(bool value)
         {
             if (value)
-            {
-                autoUpdateCanceller = new CancellationTokenSource();
-                var task = PeriodicUpdateAsync(TimeSpan.FromSeconds(10), autoUpdateCanceller.Token);
-            }
+                JobManager.AddJob(async () => await UpdateGameServerAsync(), (x) => x.WithName("AutoUpdate").ToRunNow().AndEvery(5).Seconds());
             else
-            {
-                autoUpdateCanceller?.Cancel();
-            }
-        }
-
-        private async Task PeriodicUpdateAsync(TimeSpan interval, CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                if (Connected)
-                    await UpdateGameServerAsync();
-                await Task.Delay(interval, cancellationToken);
-            }
+                JobManager.RemoveJob("AutoUpdate");
         }
 
         protected override void GetDesignTimeData()

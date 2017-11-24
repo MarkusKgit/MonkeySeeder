@@ -57,9 +57,9 @@
                 </Expander.Header>
                 <materialDesign:ColorZone
                     x:Name="gridColorzone"
-                    Padding="16"
+                    Padding="10"
                     materialDesign:ShadowAssist.ShadowDepth="Depth1"
-                    Mode="PrimaryMid">
+                    Mode="PrimaryLight">
                     <DataGrid
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"

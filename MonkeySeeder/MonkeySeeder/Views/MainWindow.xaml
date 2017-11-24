@@ -18,7 +18,7 @@
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     TextOptions.TextFormattingMode="Ideal"
     TextOptions.TextRenderingMode="Auto"
-    mc:Ignorable="d">
+    mc:Ignorable="d" Icon="/MonkeySeeder;component/Resources/MonkeyIcon.png">
     <Window.DataContext>
         <vm:MainWindowVM />
     </Window.DataContext>
